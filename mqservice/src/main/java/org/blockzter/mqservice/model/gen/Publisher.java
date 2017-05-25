@@ -2,15 +2,16 @@
 package org.blockzter.mqservice.model.gen;
 
 import javax.annotation.Generated;
-import com.google.gson.annotations.SerializedName;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Generated("net.hexar.json2pojo")
 @SuppressWarnings("unused")
 public class Publisher {
 
-    @SerializedName("key")
+    @JsonProperty(value = "key")
     private String mKey;
-    @SerializedName("topic")
+    @JsonProperty(value = "topic")
     private String mTopic;
 
     public String getKey() {

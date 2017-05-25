@@ -1,7 +1,6 @@
 package org.blockzter.utils;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.blockzter.mqservice.model.gen.MQServiceConfig;
 import org.blockzter.mqservice.model.zwave.ZWaveNodeChangedValue;
 import org.blockzter.mqservice.model.zwave.ZWaveValueAdded;
@@ -39,11 +38,9 @@ public class TestAppUtils {
 		String message37 = "{\"nodeid\":7,\"cmdclass\":37,\"instance\":1,\"cmdidx\":0,\"oldState\":false,\"currState\":true,\"label\":\"Switch\",\"units\":\"\",\"value\":{\"value_id\":\"7-37-1-0\",\"node_id\":7,\"class_id\":37,\"type\":\"bool\",\"genre\":\"user\",\"instance\":1,\"index\":0,\"label\":\"Switch\",\"units\":\"\",\"help\":\"\",\"read_only\":false,\"write_only\":false,\"is_polled\":false,\"min\":0,\"max\":0,\"value\":true},\"uuid\":\"b827eb501c51-0x16a1eda-7\"}";
 		String message38 = "{\"nodeid\":4,\"cmdclass\":38,\"instance\":1,\"cmdidx\":0,\"oldState\":2,\"currState\":98,\"label\":\"Level\",\"units\":\"\",\"value\":{\"value_id\":\"4-38-1-0\",\"node_id\":4,\"class_id\":38,\"type\":\"byte\",\"genre\":\"user\",\"instance\":1,\"index\":0,\"label\":\"Level\",\"units\":\"\",\"help\":\"\",\"read_only\":false,\"write_only\":false,\"is_polled\":false,\"min\":0,\"max\":255,\"value\":98},\"uuid\":\"b827eb501c51-0x16a1eda-4\"}";
 
-		GsonBuilder builder = new GsonBuilder();
-		Gson gson = builder.create();
+		ObjectMapper mapper = new ObjectMapper();
 
-
-		ZWaveNodeChangedValue nodeChangedValue = gson.fromJson(message37, ZWaveNodeChangedValue.class);
+		ZWaveNodeChangedValue nodeChangedValue = mapper.readValue(message37, ZWaveNodeChangedValue.class);
 		LOGGER.info("VC37={}", nodeChangedValue);
 		assertThat(nodeChangedValue.getNodeid()).as("nodeid").isEqualTo(7);
 		assertThat(nodeChangedValue.getCmdclass()).as("command class").isEqualTo(37);
@@ -51,7 +48,7 @@ public class TestAppUtils {
 		assertThat(nodeChangedValue.getCmdidx()).as("command idx").isEqualTo(0);
 		assertThat(nodeChangedValue.getValue()).as("ZWave value").isNotNull();
 
-		nodeChangedValue = gson.fromJson(message38, ZWaveNodeChangedValue.class);
+		nodeChangedValue = mapper.readValue(message38, ZWaveNodeChangedValue.class);
 		LOGGER.info("VC38={}", nodeChangedValue);
 		assertThat(nodeChangedValue.getNodeid()).as("nodeid").isEqualTo(4);
 		assertThat(nodeChangedValue.getCmdclass()).as("command class").isEqualTo(38);
@@ -74,24 +71,21 @@ public class TestAppUtils {
 
 		String message4="{\"nodeid\":4,\"cmdclass\":38,\"instance\":1,\"cmdidx\":4,\"currState\":0,\"label\":\"Start Level\",\"units\":\"\",\"value\":{\"value_id\":\"4-38-1-4\",\"node_id\":4,\"class_id\":38,\"type\":\"byte\",\"genre\":\"system\",\"instance\":1,\"index\":4,\"label\":\"Start Level\",\"units\":\"\",\"help\":\"\",\"read_only\":false,\"write_only\":false,\"is_polled\":false,\"min\":0,\"max\":255,\"value\":0},\"uuid\":\"b827eb501c51-0x16a1eda-4\"}";
 
-		GsonBuilder builder = new GsonBuilder();
-//		builder.registerTypeAdapter(Long.class, new HexDeserializer());
-//		builder.registerTypeAdapter(ZWaveNodeState.class, new StatusDeserializer());
-		Gson gson = builder.create();
+		ObjectMapper mapper = new ObjectMapper();
 
-		ZWaveValueAdded valueAdded = gson.fromJson(message0, ZWaveValueAdded.class);
+		ZWaveValueAdded valueAdded = mapper.readValue(message0, ZWaveValueAdded.class);
 		LOGGER.info("VA0={}", valueAdded);
 
-		valueAdded = gson.fromJson(message1, ZWaveValueAdded.class);
+		valueAdded = mapper.readValue(message1, ZWaveValueAdded.class);
 		LOGGER.info("VA1={}", valueAdded);
 
-		valueAdded = gson.fromJson(message2, ZWaveValueAdded.class);
+		valueAdded = mapper.readValue(message2, ZWaveValueAdded.class);
 		LOGGER.info("VA2={}", valueAdded);
 
-		valueAdded = gson.fromJson(message3, ZWaveValueAdded.class);
+		valueAdded = mapper.readValue(message3, ZWaveValueAdded.class);
 		LOGGER.info("VA3={}", valueAdded);
 
-		valueAdded = gson.fromJson(message4, ZWaveValueAdded.class);
+		valueAdded = mapper.readValue(message4, ZWaveValueAdded.class);
 		LOGGER.info("VA4={}", valueAdded);
 
 		LOGGER.info("**** testZWaveValueAdded");

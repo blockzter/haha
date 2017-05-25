@@ -68,7 +68,7 @@ public class MQService {
 			List<Subscriber> subs = b.getSubscriber();
 
 			if (subs != null && !subs.isEmpty()) {
-				ZWaveClient client = new ZWaveClient(b);
+				ZWaveClient client = new ZWaveClient(b, mqServiceConfig.getRepository());
 
 				zWaveClients.put(b.getName(), client);
 				List<String> topics = new ArrayList<>(subs.size());
@@ -76,7 +76,8 @@ public class MQService {
 					topics.add(sub.getTopic());
 				}
 
-				client.run(topics.stream().toArray(String[]::new));
+//				client.setRepository(mqServiceConfig.getRepository());
+				client.run(topics.toArray(new String[0]));
 
 				testPubs(client);
 
@@ -113,8 +114,9 @@ public class MQService {
 				if (line.contains("end") || line.contains("quit")) break;
 
 				String[] topicAndMsg = line.split("//");
-
-				client.publish(topicAndMsg[0], topicAndMsg[1]);
+				if (topicAndMsg.length == 2) {
+					client.publish(topicAndMsg[0], topicAndMsg[1]);
+				}
 //				client.publish("switchOn", line);
 			}
 

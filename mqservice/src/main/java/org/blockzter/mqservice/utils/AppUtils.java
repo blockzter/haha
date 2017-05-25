@@ -1,8 +1,7 @@
 package org.blockzter.mqservice.utils;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
-import com.google.gson.reflect.TypeToken;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.blockzter.mqservice.exceptions.PropertyNotFoundException;
 import org.blockzter.mqservice.model.dto.NodeDTO;
@@ -51,53 +50,48 @@ public class AppUtils {
 	}
 
 	public static MQServiceConfig loadConfig(String fileName) {
-		Gson gson = new Gson();
-		MQServiceConfig mqServiceConfig = null;	//new MQServiceConfig();
-		String contents;
+		ObjectMapper mapper = new ObjectMapper();
+		MQServiceConfig mqServiceConfig = null;
+
 		try {
-			contents = new String(Files.readAllBytes(Paths.get(fileName)), Charset.forName("UTF-8"));
-			LOGGER.info("CONTENTS={}", contents);
-			mqServiceConfig = gson.fromJson(contents, MQServiceConfig.class);
-			LOGGER.info("mqServiceConfig={}", mqServiceConfig);
+			mqServiceConfig = mapper.readValue(new File(fileName), MQServiceConfig.class);
 		} catch(FileNotFoundException e) {
 			LOGGER.error("Cannot find file {}", fileName, e);
 		} catch(IOException e) {
 			LOGGER.error("Failed reading file {}", fileName, e);
-		} catch(JsonSyntaxException e) {
-			LOGGER.error("Bad JSon format in file {}", fileName, e);
 		}
 
 		return mqServiceConfig;
 	}
 
 	public static List<NodeDTO> loadCache(String fileName) {
-		Gson gson = new Gson();
+		ObjectMapper mapper = new ObjectMapper();
+		TypeReference<List<NodeDTO>> listTypeRef = new TypeReference<List<NodeDTO>>() {};
+
 		List<NodeDTO> nodes = null;
 
 		String contents;
 		try {
 			contents = new String(Files.readAllBytes(Paths.get(fileName)), Charset.forName("UTF-8"));
 			LOGGER.info("CONTENTS={}", contents);
-			nodes = gson.fromJson(contents, new TypeToken<List<NodeDTO>>(){}.getType());
+			nodes = mapper.readValue(contents, listTypeRef);
 			LOGGER.info("nodes={}", nodes);
 		} catch(FileNotFoundException e) {
 			LOGGER.error("Cannot find file {}", fileName, e);
 		} catch(IOException e) {
 			LOGGER.error("Failed reading file {}", fileName, e);
-		} catch(JsonSyntaxException e) {
-			LOGGER.error("Bad JSon format in file {}", fileName, e);
 		}
 
 		return nodes;
 	}
 
 	public static boolean saveCache(String fileName, List<NodeDTO> nodes) {
-		Gson gson = new Gson();
+		ObjectMapper mapper = new ObjectMapper();
 		String contents;
 		boolean wrote = true;
 
 		try {
-			contents = gson.toJson(nodes, new TypeToken<List<NodeDTO>>(){}.getType());
+			contents = mapper.writeValueAsString(nodes);
 			LOGGER.info("CONTENTS={}", contents);
 			Files.write(Paths.get(fileName), contents.getBytes(), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 		} catch(IOException e) {

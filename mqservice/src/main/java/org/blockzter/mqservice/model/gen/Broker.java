@@ -3,20 +3,31 @@ package org.blockzter.mqservice.model.gen;
 
 import java.util.List;
 import javax.annotation.Generated;
-import com.google.gson.annotations.SerializedName;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Generated("net.hexar.json2pojo")
 @SuppressWarnings("unused")
 public class Broker {
 
-    @SerializedName("connection")
+    @JsonProperty(value = "connection")
     private Connection mConnection;
-    @SerializedName("name")
+    @JsonProperty(value = "name")
     private String mName;
-    @SerializedName("publishers")
+    @JsonProperty(value = "publishers")
     private List<Publisher> mPublishers;
-    @SerializedName("subscriber")
+    @JsonProperty(value = "subscriber")
     private List<Subscriber> mSubscriber;
+
+    @Override
+    public String toString() {
+        return "Broker{" +
+                "mConnection=" + mConnection +
+                ", mName='" + mName + '\'' +
+                ", mPublishers=" + mPublishers +
+                ", mSubscriber=" + mSubscriber +
+                '}';
+    }
 
     public Connection getConnection() {
         return mConnection;

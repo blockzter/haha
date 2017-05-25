@@ -2,7 +2,8 @@
 package org.blockzter.mqservice.model.zwave;
 
 import javax.annotation.Generated;
-import com.google.gson.annotations.SerializedName;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Generated("net.hexar.json2pojo")
 @SuppressWarnings("unused")
@@ -12,37 +13,37 @@ public class ZWaveValue {
 // 			"read_only":false,"write_only":false,"is_polled":false,"min":0,"max":0,"value":true},"uuid":"b827eb501c51-0x16a1eda-6"}',
 //	Feb  8 15:23:59 raspberrypi Node-RED[8078]: _msgid: '2432245d.dbcddc' }
 
-    @SerializedName("class_id")
+    @JsonProperty(value = "class_id")
     private Long mClassId;
-    @SerializedName("genre")
+    @JsonProperty(value = "genre")
     private String mGenre;
-    @SerializedName("help")
+    @JsonProperty(value = "help")
     private String mHelp;
-    @SerializedName("index")
+    @JsonProperty(value = "index")
     private Long mIndex;
-    @SerializedName("instance")
+    @JsonProperty(value = "instance")
     private Long mInstance;
-    @SerializedName("is_polled")
+    @JsonProperty(value = "is_polled")
     private Boolean mIsPolled;
-    @SerializedName("label")
+    @JsonProperty(value = "label")
     private String mLabel;
-    @SerializedName("max")
+    @JsonProperty(value = "max")
     private Long mMax;
-    @SerializedName("min")
+    @JsonProperty(value = "min")
     private Long mMin;
-    @SerializedName("node_id")
+    @JsonProperty(value = "node_id")
     private Long mNodeId;
-    @SerializedName("read_only")
+    @JsonProperty(value = "read_only")
     private Boolean mReadOnly;
-    @SerializedName("type")
+    @JsonProperty(value = "type")
     private String mType;
-    @SerializedName("units")
+    @JsonProperty(value = "units")
     private String mUnits;
-    @SerializedName("value")
+    @JsonProperty(value = "value")
     private String mValue;
-    @SerializedName("value_id")
+    @JsonProperty(value = "value_id")
     private String mValueId;
-    @SerializedName("write_only")
+    @JsonProperty(value = "write_only")
     private Boolean mWriteOnly;
 
     @Override

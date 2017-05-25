@@ -23,6 +23,15 @@ public class NodeDTO extends BaseDTO {
 
 
 	@Override
+	public String toString() {
+		return "NodeDTO{" +
+				"id=" + getId() +
+				"  nodeType=" + nodeType +
+				", zwaveNode=" + zwaveNode +
+				'}';
+	}
+
+	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
@@ -60,20 +69,48 @@ public class NodeDTO extends BaseDTO {
 
 	public void addUpdateZwaveNode(ZWaveNode zWaveNode) {
 		boolean done = false;
-		for (ZWaveNode z : this.zwaveNode) {
-			if (z.equals(zWaveNode)) {
-				// update existing...
-				done = true;
-				try {
-					BeanUtils.copyProperties(z, zWaveNode);
-				} catch (IllegalAccessException | InvocationTargetException e) {
-					LOGGER.error("Failed to update zwave node {}: {}", z.getNodeid(), z.getName(), e);
-				}
+		LOGGER.info("IN  ={}", zWaveNode);
+		LOGGER.info("bLST={}", this.zwaveNode);
 
-				if (!done) {
-					zwaveNode.add(zWaveNode);
+		boolean foundIt=false;
+		if (this.zwaveNode.isEmpty()) {
+			this.zwaveNode.add(zWaveNode);
+		} else {
+			for(ZWaveNode z : this.zwaveNode) {
+				if (z.equals(zWaveNode)) {
+					// update
+					foundIt = true;
+					try {
+						BeanUtils.copyProperties(z, zWaveNode);
+					} catch (IllegalAccessException | InvocationTargetException e) {
+						LOGGER.error("Failed to update zwave node {}: {}", z.getNodeid(), z.getName(), e);
+					}
+					break;
 				}
 			}
+			if (!foundIt) {
+				this.zwaveNode.add(zWaveNode);
+			}
+
+//
+//
+//			for (ZWaveNode z : this.zwaveNode) {
+//				LOGGER.info("   Z={}", z);
+//				if (z.equals(zWaveNode)) {
+//					// update existing...
+//					done = true;
+//					try {
+//						BeanCopy.copyProperties(z, zWaveNode);
+//					} catch (IllegalAccessException | InvocationTargetException e) {
+//						LOGGER.error("Failed to update zwave node {}: {}", z.getNodeid(), z.getName(), e);
+//					}
+//
+//					if (!done) {
+//						this.zwaveNode.add(zWaveNode);
+//					}
+//				} else this.zwaveNode.add(zWaveNode);
+//			}
 		}
+		LOGGER.info("aLST={}", this.zwaveNode);
 	}
 }

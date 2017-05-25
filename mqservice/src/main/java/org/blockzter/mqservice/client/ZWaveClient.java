@@ -1,19 +1,23 @@
 package org.blockzter.mqservice.client;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.blockzter.mqservice.model.db.ZWaveNodeRepository;
 import org.blockzter.mqservice.model.dto.NodeDTO;
-import org.blockzter.mqservice.model.json.HexDeserializer;
+import org.blockzter.mqservice.model.gen.DBRepository;
 import org.blockzter.mqservice.model.zwave.*;
 import org.blockzter.mqservice.model.gen.Broker;
 import org.blockzter.mqservice.service.CacheService;
 import org.blockzter.mqservice.service.CacheServiceImpl;
+import org.blockzter.mqservice.service.RepositoryService;
+import org.blockzter.mqservice.service.RepositoryServiceImpl;
 import org.eclipse.paho.client.mqttv3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
+import java.util.List;
 
 /**
  * Created by blockm on 9/7/16.
@@ -28,14 +32,19 @@ public class ZWaveClient implements MqttCallbackExtended{
 	private MqttClient client;
 	private Broker broker;
 	private CacheService cacheService;
+	private ZWaveNodeRepository repo = null;
+	private ObjectMapper mapper = new ObjectMapper();
+	private RepositoryService repoService;
 
-	public ZWaveClient(Broker broker) {
+
+	public ZWaveClient(Broker broker, DBRepository repository) {
 		this.broker = broker;
 		brokerUrl = broker.getConnection().getHost();
 		userId = broker.getConnection().getUser();
 		passwd = broker.getConnection().getPassword();
 		clientId = broker.getConnection().getClientId();
 		cacheService = CacheServiceImpl.getInstance();
+		repoService = new RepositoryServiceImpl(repository);
 	}
 
 	public void run(String... subTopics) {
@@ -56,6 +65,7 @@ public class ZWaveClient implements MqttCallbackExtended{
 		}
 
 		LOGGER.info("Connected to {}", brokerUrl);
+
 
 		if (subTopics != null) {
 			MqttTopic[] myTopics = new MqttTopic[subTopics.length];
@@ -78,6 +88,9 @@ public class ZWaveClient implements MqttCallbackExtended{
 //		} catch(Exception e) {
 //			LOGGER.error("Failed to switchOn", e);
 //		}
+
+		List<ZWaveNode> nodes = repoService.getTodays();
+		LOGGER.info("NODES={}", nodes);
 	}
 
 	public void publish(String topic, String payload) {
@@ -100,51 +113,54 @@ public class ZWaveClient implements MqttCallbackExtended{
 	@Override
 	public void messageArrived(String topic, MqttMessage message) throws Exception {
 		LOGGER.info("GOT topic={} message={}", topic, message);
-		GsonBuilder builder = new GsonBuilder();
-		builder.registerTypeAdapter(Long.class, new HexDeserializer());
-		Gson gson = builder.create();
 		Path path = FileSystems.getDefault().getPath("config", "nodes-conf.json");
 
 
 		if (topic.contains("ready")) {
-			ZWaveNodeAdded nodeReady = gson.fromJson(message.toString(), ZWaveNodeAdded.class);
+			ZWaveNodeAdded nodeReady = mapper.readValue(message.toString(), ZWaveNodeAdded.class);
 			NodeDTO node = toNodeDTO(nodeReady);
 			cacheService.addUpdateNode(node);
+			repoService.save(node);
 			LOGGER.info("nodeReady={}", nodeReady);
 
 		} else if (topic.contains("change")) {
-			ZWaveNodeChangedValue nodeChangedValue = gson.fromJson(message.toString(), ZWaveNodeChangedValue.class);
+			ZWaveNodeChangedValue nodeChangedValue = mapper.readValue(message.toString(), ZWaveNodeChangedValue.class);
 			NodeDTO node = toNodeDTO(nodeChangedValue);
 			cacheService.addUpdateNode(node);
+			repoService.save(node);
 			LOGGER.info("nodeChangedValue={}", nodeChangedValue);
 
 		} else if (topic.contains("driver ready")) {
-			ZWaveDriverReady driverReady = gson.fromJson(message.toString(), ZWaveDriverReady.class);
+			ZWaveDriverReady driverReady = mapper.readValue(message.toString(), ZWaveDriverReady.class);
 			cacheService.load(path.toString());
 			LOGGER.info("driverReady={}", driverReady);
 
 		} else if (topic.contains("node added")) {
-			ZWaveNodeAdded nodeAdded = gson.fromJson(message.toString(), ZWaveNodeAdded.class);
+			ZWaveNodeAdded nodeAdded = mapper.readValue(message.toString(), ZWaveNodeAdded.class);
 			NodeDTO node = toNodeDTO(nodeAdded);
 			cacheService.addNode(node);
+			repoService.save(node);
 			LOGGER.info("nodeAdded={}", nodeAdded);
 
 		} else if (topic.contains("value added")) {
-			ZWaveValueAdded valueAdded = gson.fromJson(message.toString(), ZWaveValueAdded.class);
+			ZWaveValueAdded valueAdded = mapper.readValue(message.toString(), ZWaveValueAdded.class);
 			NodeDTO node = toNodeDTO(valueAdded);
 			cacheService.addNode(node);
+			repoService.save(node);
 			LOGGER.info("valueAdded={}", valueAdded);
 
 		} else if (topic.contains("notification")) {
-			ZWaveNotification notification = gson.fromJson(message.toString(), ZWaveNotification.class);
+			ZWaveNotification notification = mapper.readValue(message.toString(), ZWaveNotification.class);
 			LOGGER.info("notification={}", notification);
 
 		} else if (topic.contains("scan complete")) {
-			String scanComplete = gson.fromJson(message.toString(), String.class);
+			String scanComplete = mapper.readValue(message.toString(), String.class);
 
 			cacheService.save(path.toString());
 			LOGGER.info("scanComplete={}", scanComplete);
 		}
+
+		LOGGER.info("SO FAR={}", repoService.getTodays());
 	}
 
 	@Override
@@ -157,6 +173,19 @@ public class ZWaveClient implements MqttCallbackExtended{
 		LOGGER.info("connection complete: reconn={} serverUI={}", reconnect, serverURI);
 	}
 
+	private void handleNodeChange(MqttMessage message) {
+		ZWaveNodeChangedValue nodeChangedValue = null;
+		try {
+			nodeChangedValue = mapper.readValue(message.toString(), ZWaveNodeChangedValue.class);
+			NodeDTO node = toNodeDTO(nodeChangedValue);
+			cacheService.addUpdateNode(node);
+			LOGGER.info("nodeChangedValue={}", nodeChangedValue);
+		} catch(IOException e) {
+			LOGGER.error("Failed to read Node CHanged Value...", e);
+		}
+
+
+	}
 	private NodeDTO toNodeDTO(ZWaveNodeAdded nodeAdded) {
 		if (nodeAdded == null) return null;
 
@@ -237,4 +266,5 @@ public class ZWaveClient implements MqttCallbackExtended{
 //	Feb  8 15:23:59 raspberrypi Node-RED[8078]: { topic: 'zwave: node ready',
 //	Feb  8 15:23:59 raspberrypi Node-RED[8078]: payload: '{"nodeid":6,"nodeinfo":{"manufacturer":"GE","manufacturerid":"0x0063","product":"12722 On/Off Relay Switch","producttype":"0x4952","productid":"0x3032","type":"Binary Power Switch","name":"","loc":""},"uuid":"b827eb501c51-0x16a1eda-6"}',
 //	Feb  8 15:23:59 raspberrypi Node-RED[8078]: _msgid: '4b8f723c.b4708c' }
+
 }

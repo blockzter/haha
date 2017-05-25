@@ -1,9 +1,25 @@
 package org.blockzter.mqservice.model.zwave;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.beanutils.BeanUtilsBean;
+
+import java.util.Date;
+
+
 /**
  * Created by mblock2 on 8/22/16.
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties({"id", "revision"})
 public class ZWaveNode {
+	@JsonProperty("_id")
+	private String id;
+	@JsonProperty("_rev")
+	private String revision;
+	private Date lastUpdate;
+
 	private Integer nodeid;
 	private Integer commandclass;
 	private Integer instance;
@@ -31,6 +47,7 @@ public class ZWaveNode {
 		this.nodeid = nodeid;
 		this.commandclass = commandclass;
 		this.instance = instance;
+		BeanUtilsBean.getInstance().getConvertUtils().register(false, false, 0);
 	}
 
 	@Override
@@ -57,11 +74,14 @@ public class ZWaveNode {
 	@Override
 	public String toString() {
 		return "ZWaveNode{" +
-				"nodeid=" + nodeid +
+				"id='" + id + '\'' +
+				", revision='" + revision + '\'' +
+				", lastUpdate=" + lastUpdate +
+				", nodeid=" + nodeid +
 				", commandclass=" + commandclass +
 				", instance=" + instance +
 				", cmdidx=" + cmdidx +
-				", currState=" + currState +
+				", currState='" + currState + '\'' +
 				", label='" + label + '\'' +
 				", units='" + units + '\'' +
 				", uuid='" + uuid + '\'' +
@@ -73,9 +93,33 @@ public class ZWaveNode {
 				", type='" + type + '\'' +
 				", name='" + name + '\'' +
 				", loc='" + loc + '\'' +
+				", ZWaveValue=" + ZWaveValue +
 				'}';
 	}
 
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getRevision() {
+		return revision;
+	}
+
+	public Date getLastUpdate() {
+		return lastUpdate;
+	}
+
+	public void setLastUpdate(Date lastUpdate) {
+		this.lastUpdate = lastUpdate;
+	}
+
+	public void setRevision(String revision) {
+		this.revision = revision;
+	}
 
 	public Integer getNodeid() {
 		return nodeid;

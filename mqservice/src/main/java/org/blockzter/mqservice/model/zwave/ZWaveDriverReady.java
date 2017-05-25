@@ -2,15 +2,16 @@
 package org.blockzter.mqservice.model.zwave;
 
 import javax.annotation.Generated;
-import com.google.gson.annotations.SerializedName;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Generated("net.hexar.json2pojo")
 @SuppressWarnings("unused")
 public class ZWaveDriverReady {
 
-    @SerializedName("homeid")
+    @JsonProperty(value = "homeid")
     private Long mHomeid;
-    @SerializedName("name")
+    @JsonProperty(value = "name")
     private String mName;
 
     public Long getHomeid() {

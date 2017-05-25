@@ -2,24 +2,37 @@
 package org.blockzter.mqservice.model.gen;
 
 import javax.annotation.Generated;
-import com.google.gson.annotations.SerializedName;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Generated("net.hexar.json2pojo")
 @SuppressWarnings("unused")
 public class Connection {
 
-    @SerializedName("cleanSession")
+    @JsonProperty(value = "cleanSession")
     private Boolean mCleanSession;
-    @SerializedName("clientId")
+    @JsonProperty(value = "clientId")
     private String mClientId;
-    @SerializedName("host")
+    @JsonProperty(value = "host")
     private String mHost;
-    @SerializedName("password")
+    @JsonProperty(value = "password")
     private String mPassword;
-    @SerializedName("port")
+    @JsonProperty(value = "port")
     private Long mPort;
-    @SerializedName("user")
+    @JsonProperty(value = "user")
     private String mUser;
+
+    @Override
+    public String toString() {
+        return "Connection{" +
+                "mCleanSession=" + mCleanSession +
+                ", mClientId='" + mClientId + '\'' +
+                ", mHost='" + mHost + '\'' +
+                ", mPassword='" + mPassword + '\'' +
+                ", mPort=" + mPort +
+                ", mUser='" + mUser + '\'' +
+                '}';
+    }
 
     public Boolean getCleanSession() {
         return mCleanSession;

@@ -1,12 +1,22 @@
 package org.blockzter.mqservice.service;
 
 import org.blockzter.mqservice.model.NodeType;
+import org.blockzter.mqservice.model.db.ZWaveNodeRepository;
 import org.blockzter.mqservice.model.dto.NodeDTO;
 import org.blockzter.mqservice.model.zwave.ZWaveNode;
+import org.ektorp.CouchDbConnector;
+import org.ektorp.CouchDbInstance;
+import org.ektorp.http.HttpClient;
+import org.ektorp.http.StdHttpClient;
+import org.ektorp.impl.StdCouchDbConnector;
+import org.ektorp.impl.StdCouchDbInstance;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.MalformedURLException;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -15,13 +25,25 @@ import static org.assertj.core.api.Assertions.*;
  */
 public class TestCacheService {
 	private static Logger LOGGER = LoggerFactory.getLogger(TestCacheService.class);
+	private static String DBURL="http://zwpi:5984";
+	private static String DBNAME = "zwave_events";
 	private CacheService service = null;
+	private ZWaveNodeRepository repo = null;
 
 	@Before
 	public void init() {
 		LOGGER.info("*** init");
 		service = CacheServiceImpl.getInstance();
 		service.clear();
+
+		try {
+			HttpClient httpClient = new StdHttpClient.Builder().url(DBURL).build();
+			CouchDbInstance couchDbInstance = new StdCouchDbInstance(httpClient);
+			CouchDbConnector db = new StdCouchDbConnector(DBNAME, couchDbInstance);
+			repo = new ZWaveNodeRepository(ZWaveNode.class, db);
+		} catch(MalformedURLException e) {
+			LOGGER.error("Failed to establish DB connection {}", DBURL, e);
+		}
 	}
 
 	@Test
@@ -102,6 +124,28 @@ public class TestCacheService {
 		service.load("testLoad1.json");
 		LOGGER.info("**** testServiceLoadNonExistentFile");
 	}
+
+	@Test
+	public void testSaveZwaveNode() throws Exception {
+		ZWaveNode node = mkZWNode(1, 39, 1, "test #1");
+//		repo.add(node);
+
+		LOGGER.info("NODE={}", node);
+		List<ZWaveNode> all = repo.getAll();
+		LOGGER.info("ALL={}", all);
+
+	}
+
+//	@Test
+//	public void testSaveNodeDTO() throws Exception {
+//		NodeDTO node1 = new NodeDTO();
+//		node1.setNodeType(NodeType.ZWAVE);
+//		node1.addUpdateZwaveNode(mkZWNode(1, 37, 1, "Test Node #1a"));
+//		node1.addUpdateZwaveNode(mkZWNode(1, 39, 1, "Test Node #1b"));
+//
+//		repo.add()
+//
+//	}
 
 	private ZWaveNode mkZWNode(Integer id, Integer commandClass, Integer instance, String label) {
 		ZWaveNode node = new ZWaveNode(id, commandClass, instance);

@@ -2,15 +2,19 @@
 package org.blockzter.mqservice.model.zwave;
 
 import javax.annotation.Generated;
-import com.google.gson.annotations.SerializedName;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Generated("net.hexar.json2pojo")
 @SuppressWarnings("unused")
 public class ZWaveNodeAdded {
 
-    @SerializedName("nodeid")
+    @JsonProperty(value = "nodeid")
     private Integer mNodeid;
-    @SerializedName("uuid")
+    @JsonProperty(value = "nodeinfo")
+    private ZWaveNodeInfo nodeInfo;
+
+    @JsonProperty(value = "uuid")
     private String mUuid;
 
     public Integer getNodeid() {
@@ -19,6 +23,14 @@ public class ZWaveNodeAdded {
 
     public void setNodeid(Integer nodeid) {
         mNodeid = nodeid;
+    }
+
+    public ZWaveNodeInfo getNodeInfo() {
+        return nodeInfo;
+    }
+
+    public void setNodeInfo(ZWaveNodeInfo nodeInfo) {
+        this.nodeInfo = nodeInfo;
     }
 
     public String getUuid() {
@@ -33,6 +45,7 @@ public class ZWaveNodeAdded {
     public String toString() {
         return "ZWaveNodeAdded{" +
                 "mNodeid=" + mNodeid +
+                ", nodeInfo=" + nodeInfo +
                 ", mUuid='" + mUuid + '\'' +
                 '}';
     }

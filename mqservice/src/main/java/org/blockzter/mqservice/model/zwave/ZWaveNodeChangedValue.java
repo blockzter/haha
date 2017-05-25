@@ -2,31 +2,32 @@
 package org.blockzter.mqservice.model.zwave;
 
 import javax.annotation.Generated;
-import com.google.gson.annotations.SerializedName;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Generated("net.hexar.json2pojo")
 @SuppressWarnings("unused")
 public class ZWaveNodeChangedValue {
 
-    @SerializedName("cmdclass")
+    @JsonProperty(value = "cmdclass")
     private Integer mCmdclass;
-    @SerializedName("cmdidx")
+    @JsonProperty(value = "cmdidx")
     private Integer mCmdidx;
-    @SerializedName("currState")
+    @JsonProperty(value = "currState")
     private String mCurrState;
-    @SerializedName("instance")
+    @JsonProperty(value = "instance")
     private Integer mInstance;
-    @SerializedName("label")
+    @JsonProperty(value = "label")
     private String mLabel;
-    @SerializedName("nodeid")
+    @JsonProperty(value = "nodeid")
     private Integer mNodeid;
-    @SerializedName("oldState")
+    @JsonProperty(value = "oldState")
     private String mOldState;
-    @SerializedName("units")
+    @JsonProperty(value = "units")
     private String mUnits;
-    @SerializedName("uuid")
+    @JsonProperty(value = "uuid")
     private String mUuid;
-    @SerializedName("value")
+    @JsonProperty(value = "value")
     private ZWaveValue mValue;
 
     @Override

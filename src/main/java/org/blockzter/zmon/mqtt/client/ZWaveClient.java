@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by blockm on 9/7/16.
  */
-public class ZWaveClient implements MqttCallback{
+public class ZWaveClient implements MqttCallbackExtended{
 	private static Logger LOGGER = LoggerFactory.getLogger(ZWaveClient.class);
 	private String brokerUrl;
 	private String userId;
@@ -61,6 +61,13 @@ public class ZWaveClient implements MqttCallback{
 				LOGGER.error("Failed to subscribe to one of the topics...", e);
 			}
 		}
+
+		MqttMessage msg = new MqttMessage("{topic: 'switchOn', payload: {'nodeid':2}}".getBytes());
+		try {
+			client.publish("switchOn", msg);
+		} catch(Exception e) {
+			LOGGER.error("Failed to switchOn", e);
+		}
 	}
 
 
@@ -89,5 +96,10 @@ public class ZWaveClient implements MqttCallback{
 	@Override
 	public void deliveryComplete(IMqttDeliveryToken token) {
 		LOGGER.info("delivery complete token={}", token);
+	}
+
+	@Override
+	public void connectComplete(boolean reconnect, String serverURI) {
+		LOGGER.info("connection complete: reconn={} serverUI={}", reconnect, serverURI);
 	}
 }

@@ -2,19 +2,20 @@
 package org.blockzter.mqservice.model.zwave;
 
 import javax.annotation.Generated;
-import com.google.gson.annotations.SerializedName;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Generated("net.hexar.json2pojo")
 @SuppressWarnings("unused")
 public class ZWaveNotification {
 
-    @SerializedName("help")
+    @JsonProperty(value = "help")
     private String mHelp;
-    @SerializedName("nodeid")
+    @JsonProperty(value = "nodeid")
     private Long mNodeid;
-    @SerializedName("notification")
+    @JsonProperty(value = "notification")
     private Long mNotification;
-    @SerializedName("uuid")
+    @JsonProperty(value = "uuid")
     private String mUuid;
 
     public String getHelp() {
