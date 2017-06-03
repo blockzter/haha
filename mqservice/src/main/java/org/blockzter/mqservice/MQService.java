@@ -1,4 +1,4 @@
-package org.blockzter.mqservice.service;
+package org.blockzter.mqservice;
 
 import org.blockzter.mqservice.client.ZWaveClient;
 import org.blockzter.mqservice.model.gen.Broker;
@@ -20,29 +20,15 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by mblock2 on 10/9/16.
+ *
  */
 public class MQService {
 	private static Logger LOGGER = LoggerFactory.getLogger(MQService.class);
-	private static final String CLIENT_PROP_FILENAME_KEY = "CONFIG";
-	private static final String CLIENT_PROP_FILENAME = "client.properties";
-	private static final String MQTT_CLIENT_ID_KEY = "mqtt.client.id";
-	private static final String MQTT_BROKER_URL_KEY = "mqtt.broker.url";
-	private static final String MQSERVICE_CONF_KEY = "";
-
-	private String brokerUrl;
-	private String userId;
-	private String password;
-	private String clientId;
 	private MQServiceConfig mqServiceConfig;
 	private ConcurrentHashMap<String, ZWaveClient> zWaveClients;
 
-	public MQService(String userId, String password) {
-		this.userId = userId;
-		this.password = password;
-	}
-
 	public static void main(String[] args) {
-		MQService service = new MQService(null, null /*args[0], args[1]*/);
+		MQService service = new MQService();
 
 		service.init();
 		service.run();
@@ -50,11 +36,10 @@ public class MQService {
 
 	private void init() {
 		mqServiceConfig = null;
-		Path path = null;
 
 		File cwd = new File(".");
 		LOGGER.info("CWD={}", cwd.getAbsolutePath());
-		path = FileSystems.getDefault().getPath("config", "mqservice-conf.json");
+		Path path = FileSystems.getDefault().getPath("config", "mqservice-conf.json");
 		LOGGER.info("CF PATH={}", path);
 		mqServiceConfig = AppUtils.loadConfig(path.toString());
 		LOGGER.info("CONFIG={}", mqServiceConfig);
@@ -98,12 +83,9 @@ public class MQService {
 	}
 
 	private void testPubs(ZWaveClient client) {
-		boolean done = false;
-//		Stream<String> stream = null;
-
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
 			int i=0;
-			while(!done) {
+			while(true) {
 				System.out.print(">> ");
 				String line = reader.readLine();
 				i++;
