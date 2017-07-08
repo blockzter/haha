@@ -18,6 +18,8 @@ public class Broker {
     private List<Publisher> mPublishers;
     @JsonProperty(value = "subscriber")
     private List<Subscriber> mSubscriber;
+    @JsonProperty(value = "handler")
+    private Handler mHandler;
 
     @Override
     public String toString() {
@@ -26,6 +28,7 @@ public class Broker {
                 ", mName='" + mName + '\'' +
                 ", mPublishers=" + mPublishers +
                 ", mSubscriber=" + mSubscriber +
+                ", mHandler=" + mHandler +
                 '}';
     }
 
@@ -61,4 +64,11 @@ public class Broker {
         mSubscriber = subscriber;
     }
 
+	public Handler getHandler() {
+		return mHandler;
+	}
+
+	public void setHandler(Handler handler) {
+		this.mHandler = handler;
+	}
 }

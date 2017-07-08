@@ -49,17 +49,15 @@ public class RepositoryServiceImpl implements RepositoryService {
 			LOGGER.info("CK={}", k);
 		}
 
-//		RList<ZWaveNode> zWaveNodeRList = client.getList(repository.getName());
-//		LOGGER.info("RLIST={}", zWaveNodeRList);
-//
 		if (node != null && node.getZwaveNode() != null) {
 			Date now = new Date();
 			LOGGER.info("GET MAP...");
-//			RMap<Integer, ZWaveNode> map = client.getMap(repository.getName()+ "_map");
-			RMapCache<Integer, List<ZWaveNode>> map = client.getMapCache(repository.getName()+ "_map");
+			RMapCache<Integer, List<ZWaveNode>> map = client.getMapCache(getRepositoryMapName());
 
 			LOGGER.info("GET MAP={}", map.size());
-//			RSet<ZWaveNode> zWaveNodeRSet = client.getSet(repository.getName());
+			for(Integer idx : map.keySet()) {
+				LOGGER.info("{}=>{}", idx, map.get(idx));
+			}
 
 			if (map.get(node.getId()) == null) {
 				List<ZWaveNode> nodes = new ArrayList<>();
@@ -96,19 +94,13 @@ public class RepositoryServiceImpl implements RepositoryService {
 			}
 			map.put(node.getId(), node.getZwaveNode(), repository.getTtl(), TimeUnit.HOURS);
 
-//			zWaveNodeRSet.addAll(node.getZwaveNode());
-//
-//			for (ZWaveNode zWaveNode : node.getZwaveNode()) {
-//				zWaveNode.setLastUpdate(now);
-//				zWaveNodeRSet.add(zWaveNode);
-//			}
-			LOGGER.info("SAVED={}", client.getMapCache(repository.getName()+ "_map"));
+			LOGGER.info("SAVED={}", client.getMapCache(getRepositoryMapName()));
 		}
 
 		LOGGER.info("Trying OBJ...");
 		RObject tmp = null;
 		try {
-			tmp = client.getMapCache(repository.getName() + "_map");
+			tmp = client.getMapCache(getRepositoryMapName());
 		} catch(Exception e) {
 			LOGGER.error("Failed to get OBJ...", e);
 		}
@@ -117,19 +109,38 @@ public class RepositoryServiceImpl implements RepositoryService {
 
 	@Override
 	public List<ZWaveNode> getNodes(Date from, Date to) {
-		List<ZWaveNode> all = client.getList(repository.getName());
+		RMapCache<Integer, List<ZWaveNode>> map = client.getMapCache(getRepositoryMapName());
 		List<ZWaveNode> ret = new ArrayList<>();
 
-		LOGGER.info("GETNODES(from={}, to={}): ALL={}", from, to, all);
-		if (all != null) {
-			for(ZWaveNode node : all) {
-				LOGGER.info("NODE={}", node);
-				if (node.getLastUpdate().after(from) && node.getLastUpdate().before(to)) {
-					ret.add(node);
-					LOGGER.info("*** ADD");
+		if (map != null) {
+			for(Integer key : map.keySet()) {
+				List<ZWaveNode> nodes = map.get(key);
+				if (nodes != null) {
+					for(ZWaveNode node : nodes) {
+						LOGGER.info("NODE={}", node);
+						if (node.getLastUpdate().after(from) && node.getLastUpdate().before(to)) {
+							ret.add(node);
+							LOGGER.info("*** ADD");
+						}
+					}
 				}
 			}
 		}
+
+
+//		List<ZWaveNode> all = client.getList(repository.getName());
+//		List<ZWaveNode> ret = new ArrayList<>();
+//
+//		LOGGER.info("GETNODES(from={}, to={}): ALL={}", from, to, all);
+//		if (all != null) {
+//			for(ZWaveNode node : all) {
+//				LOGGER.info("NODE={}", node);
+//				if (node.getLastUpdate().after(from) && node.getLastUpdate().before(to)) {
+//					ret.add(node);
+//					LOGGER.info("*** ADD");
+//				}
+//			}
+//		}
 
 		LOGGER.info("GETNODES:ret={}", ret);
 
@@ -154,15 +165,16 @@ public class RepositoryServiceImpl implements RepositoryService {
 	@Override
 	public List<ZWaveNode> getTodays() {
 		Calendar cal = Calendar.getInstance();
-		cal.set(Calendar.HOUR, 0);
+		cal.set(Calendar.HOUR_OF_DAY, 0);
 		cal.set(Calendar.MINUTE, 0);
 		cal.set(Calendar.SECOND, 0);
 		Date now = cal.getTime();
 
-		cal.set(Calendar.HOUR, 23);
-		cal.set(Calendar.MINUTE, 59);
-		cal.set(Calendar.SECOND, 59);
-		Date later = cal.getTime();
+		Calendar to = Calendar.getInstance();
+		to.set(Calendar.HOUR_OF_DAY, 23);
+		to.set(Calendar.MINUTE, 59);
+		to.set(Calendar.SECOND, 59);
+		Date later = to.getTime();
 
 		return getNodes(now, later);
 	}
@@ -190,9 +202,12 @@ public class RepositoryServiceImpl implements RepositoryService {
 
 	public void clearAll() {
 		clear(RType.LIST, repository.getName());
-		clear(RType.MAP, repository.getName() + "_map");
+		clear(RType.MAP, getRepositoryMapName());
 	}
 
+	private String getRepositoryMapName() {
+		return repository.getName()+ "_map";
+	}
 
 //	private void init() {
 //		try {

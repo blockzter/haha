@@ -1,6 +1,8 @@
 package org.blockzter.mqservice.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
+import org.blockzter.mqservice.model.NodeType;
 import org.blockzter.mqservice.model.db.ZWaveNodeRepository;
 import org.blockzter.mqservice.model.dto.NodeDTO;
 import org.blockzter.mqservice.model.gen.DBRepository;
@@ -22,7 +24,7 @@ import java.util.List;
 /**
  * Created by blockm on 9/7/16.
  */
-public class ZWaveClient implements MqttCallbackExtended{
+public class ZWaveClient implements ClientNodeCallback{
 	private static Logger LOGGER = LoggerFactory.getLogger(ZWaveClient.class);
 	private String brokerUrl;
 	private String userId;
@@ -38,6 +40,7 @@ public class ZWaveClient implements MqttCallbackExtended{
 
 
 	public ZWaveClient(Broker broker, DBRepository repository) {
+		LOGGER.info("*** new({}, {})", broker, repository);
 		this.broker = broker;
 		brokerUrl = broker.getConnection().getHost();
 		userId = broker.getConnection().getUser();
@@ -116,10 +119,10 @@ public class ZWaveClient implements MqttCallbackExtended{
 		Path path = FileSystems.getDefault().getPath("config", "nodes-conf.json");
 
 
-		if (topic.contains("ready")) {
+		if (topic.contains("node ready")) {
 			ZWaveNodeAdded nodeReady = mapper.readValue(message.toString(), ZWaveNodeAdded.class);
 			NodeDTO node = toNodeDTO(nodeReady);
-			cacheService.addUpdateNode(node);
+//			cacheService.addUpdateNode(node);
 			repoService.save(node);
 			LOGGER.info("nodeReady={}", nodeReady);
 
@@ -190,13 +193,37 @@ public class ZWaveClient implements MqttCallbackExtended{
 		if (nodeAdded == null) return null;
 
 		NodeDTO node = new NodeDTO(nodeAdded.getNodeid());
-		ZWaveNode znode = new ZWaveNode();
+		node.setNodeType(NodeType.ZWAVE);
+		ZWaveNode znode = new ZWaveNode(nodeAdded.getNodeid());
 		znode.setNodeid(nodeAdded.getNodeid());
 		znode.setUuid(nodeAdded.getUuid());
+		updateZWaveNode(znode, nodeAdded);
 
 		node.addUpdateZwaveNode(znode);
 		return node;
 	}
+
+	private void updateZWaveNode(ZWaveNode znode, ZWaveNodeAdded nodeAdded) {
+		if (nodeAdded != null && nodeAdded.getNodeInfo() != null) {
+			ZWaveNodeInfo nodeInfo = nodeAdded.getNodeInfo();
+			LOGGER.info("NODEINFO={}", nodeInfo);
+
+			if (StringUtils.isNotBlank(nodeInfo.getManufacturer())) znode.setManufacturer(nodeInfo.getManufacturer());
+			if (StringUtils.isNotBlank(nodeInfo.getManufacturerid())) znode.setManufacturerid(nodeInfo.getManufacturerid());
+			if (StringUtils.isNotBlank(nodeInfo.getProduct())) znode.setProduct(nodeInfo.getProduct());
+			if (StringUtils.isNotBlank(nodeInfo.getProductid())) znode.setProductid(nodeInfo.getProductid());
+			if (StringUtils.isNotBlank(nodeInfo.getProducttype())) znode.setProducttype(nodeInfo.getProducttype());
+			if (StringUtils.isNotBlank(nodeInfo.getType())) znode.setType(nodeInfo.getType());
+			if (StringUtils.isNotBlank(nodeInfo.getLoc())) znode.setLoc(nodeInfo.getLoc());
+			if (StringUtils.isNotBlank(nodeInfo.getName())) znode.setName(nodeInfo.getName());
+		}
+	}
+//	private String fromString(String value) {
+//		if (StringUtils.isBlank(value)) return null;
+//
+//		return Long.valueOf(value);
+//	}
+
 
 //	Jan 21 21:16:23 raspberrypi Node-RED[8019]: { topic: 'zwave: value added',
 //	Jan 21 21:16:23 raspberrypi Node-RED[8019]: payload: '{
@@ -227,6 +254,7 @@ public class ZWaveClient implements MqttCallbackExtended{
 		if (value == null) return null;
 
 		NodeDTO node = new NodeDTO(value.getNodeid());
+		node.setNodeType(NodeType.ZWAVE);
 		ZWaveNode znode = new ZWaveNode(value.getNodeid(), value.getCmdclass(), value.getInstance());
 		znode.setNodeid(value.getNodeid());
 		znode.setUuid(value.getUuid());
@@ -248,6 +276,8 @@ public class ZWaveClient implements MqttCallbackExtended{
 //
 	private NodeDTO toNodeDTO(ZWaveNodeChangedValue value) {
 		NodeDTO node = new NodeDTO(value.getNodeid());
+		node.setNodeType(NodeType.ZWAVE);
+//		node.setId(va);
 		ZWaveNode znode = new ZWaveNode(value.getNodeid(), value.getCmdclass(), value.getInstance());
 
 		znode.setNodeid(value.getNodeid());

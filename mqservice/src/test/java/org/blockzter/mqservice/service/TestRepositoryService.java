@@ -54,6 +54,12 @@ public class TestRepositoryService {
 
 	}
 
+	@Test
+	public void testDateRange() throws Exception {
+		assertThat(repositoryService).isNotNull();
+		List<ZWaveNode> nodes = repositoryService.getTodays();
+	}
+
 	private NodeDTO mkNode(Integer id, ZWaveNode...zWaveNodes) {
 		NodeDTO ret = new NodeDTO(id);
 		ret.setNodeType(NodeType.ZWAVE);

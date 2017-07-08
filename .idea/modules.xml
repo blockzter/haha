@@ -5,6 +5,9 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/haha.iml" filepath="$PROJECT_DIR$/.idea/modules/haha.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/haha_main.iml" filepath="$PROJECT_DIR$/.idea/modules/haha_main.iml" group="haha" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/haha_test.iml" filepath="$PROJECT_DIR$/.idea/modules/haha_test.iml" group="haha" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/mqservice/mqservice.iml" filepath="$PROJECT_DIR$/.idea/modules/mqservice/mqservice.iml" group="mqservice" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/mqservice/mqservice_main.iml" filepath="$PROJECT_DIR$/.idea/modules/mqservice/mqservice_main.iml" group="mqservice" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/mqservice/mqservice_test.iml" filepath="$PROJECT_DIR$/.idea/modules/mqservice/mqservice_test.iml" group="mqservice" />
     </modules>
   </component>
 </project>

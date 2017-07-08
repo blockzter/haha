@@ -1,9 +1,8 @@
 package org.blockzter.mqservice;
 
+import org.blockzter.mqservice.client.ClientNodeCallback;
 import org.blockzter.mqservice.client.ZWaveClient;
-import org.blockzter.mqservice.model.gen.Broker;
-import org.blockzter.mqservice.model.gen.MQServiceConfig;
-import org.blockzter.mqservice.model.gen.Subscriber;
+import org.blockzter.mqservice.model.gen.*;
 import org.blockzter.mqservice.utils.AppUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +11,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ public class MQService {
 	private static Logger LOGGER = LoggerFactory.getLogger(MQService.class);
 	private MQServiceConfig mqServiceConfig;
 	private ConcurrentHashMap<String, ZWaveClient> zWaveClients;
+	private ConcurrentHashMap<String, ClientNodeCallback> mqClients;
 
 	public static void main(String[] args) {
 		MQService service = new MQService();
@@ -45,6 +47,7 @@ public class MQService {
 		LOGGER.info("CONFIG={}", mqServiceConfig);
 
 		zWaveClients = new ConcurrentHashMap<>();
+		mqClients = new ConcurrentHashMap<>();
 
 	}
 
@@ -53,18 +56,35 @@ public class MQService {
 			List<Subscriber> subs = b.getSubscriber();
 
 			if (subs != null && !subs.isEmpty()) {
-				ZWaveClient client = new ZWaveClient(b, mqServiceConfig.getRepository());
+				try {
+					ClientNodeCallback client = instantiate(b);
+					mqClients.put(b.getName(), client);
+					List<String> topics = new ArrayList<>(subs.size());
+					for (Subscriber sub : subs) {
+						topics.add(sub.getTopic());
+					}
+					client.run(topics.toArray(new String[0]));
+//					testPubs(client);
 
-				zWaveClients.put(b.getName(), client);
-				List<String> topics = new ArrayList<>(subs.size());
-				for (Subscriber sub : subs) {
-					topics.add(sub.getTopic());
+
+//				ZWaveClient client = new ZWaveClient(b, mqServiceConfig.getRepository());
+				} catch(ClassNotFoundException e) {
+					LOGGER.error("Failed to find class {} for broker {}", b.getHandler().getClient(), b.getName(), e);
+					break;
+				} catch(NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
+					LOGGER.error("Failed to instantiate {} for broker {}", b.getHandler().getClient(), b.getName(), e);
+					break;
 				}
 
-//				client.setRepository(mqServiceConfig.getRepository());
-				client.run(topics.toArray(new String[0]));
-
-				testPubs(client);
+//				zWaveClients.put(b.getName(), client);
+//				List<String> topics = new ArrayList<>(subs.size());
+//				for (Subscriber sub : subs) {
+//					topics.add(sub.getTopic());
+//				}
+//
+//				client.run(topics.toArray(new String[0]));
+//
+//				testPubs(client);
 
 			}
 		}
@@ -105,5 +125,23 @@ public class MQService {
 		} catch(IOException e) {
 			LOGGER.error("Failed to read stdin", e);
 		}
+	}
+
+	private ClientNodeCallback instantiate(Broker broker) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+		ClientNodeCallback ret = null;
+		Handler handler = broker.getHandler();
+		DBRepository dbRepository = mqServiceConfig.getRepository();
+
+		if (handler != null) {
+			String clientClassName = handler.getClient();
+			if (clientClassName != null) {
+				Class<?> clientClazz = Class.forName(clientClassName);
+				Constructor<?> con = clientClazz.getConstructor(broker.getClass(), dbRepository.getClass());
+				Object rr = con.newInstance(broker, dbRepository);
+				ret = (ClientNodeCallback)rr;
+			}
+		}
+
+		return ret;
 	}
 }

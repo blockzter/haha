@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.beanutils.BeanUtilsBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 
@@ -14,8 +16,9 @@ import java.util.Date;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties({"id", "revision"})
 public class ZWaveNode {
+	private static Logger LOGGER = LoggerFactory.getLogger(ZWaveNode.class);
 	@JsonProperty("_id")
-	private String id;
+	private Integer id;
 	@JsonProperty("_rev")
 	private String revision;
 	private Date lastUpdate;
@@ -32,35 +35,47 @@ public class ZWaveNode {
 
 
 	private String manufacturer;
-	private Long manufacturerid;
+	private String manufacturerid;
 	private String product;
-	private Long producttype;
-	private Long productid;
+	private String producttype;
+	private String productid;
 	private String type;
 	private String name;
 	private String loc;
 	private ZWaveValue ZWaveValue;
 
-	public ZWaveNode() { }
+	public ZWaveNode() {
+		BeanUtilsBean.getInstance().getConvertUtils().register(false, false, 0);
+	}
+
+	public ZWaveNode(Integer nodeid) {
+		super();
+		this.id = nodeid;
+	}
 
 	public ZWaveNode(Integer nodeid, Integer commandclass, Integer instance) {
+		super();
+		this.id = nodeid;
 		this.nodeid = nodeid;
 		this.commandclass = commandclass;
 		this.instance = instance;
-		BeanUtilsBean.getInstance().getConvertUtils().register(false, false, 0);
+//		BeanUtilsBean.getInstance().getConvertUtils().register(false, false, 0);
 	}
 
 	@Override
 	public boolean equals(Object o) {
+		LOGGER.info("EQUALS: this={}  o={}", this, o);
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 
 		ZWaveNode zWaveNode = (ZWaveNode) o;
+		LOGGER.info("EQUALS: this     : nodeid='{}'  commandClass='{}'  uuid='{}'", this.nodeid, this.commandclass, this.uuid);
+		LOGGER.info("EQUALS: zWaveNode: nodeid='{}'  commandClass='{}'  uuid='{}'", zWaveNode.nodeid, zWaveNode.commandclass, zWaveNode.uuid);
 
 		if (!nodeid.equals(zWaveNode.nodeid)) return false;
-		if (commandclass != null ? !commandclass.equals(zWaveNode.commandclass) : zWaveNode.commandclass != null)
-			return false;
-		return instance != null ? instance.equals(zWaveNode.instance) : zWaveNode.instance == null;
+//		if (commandclass != null ? !commandclass.equals(zWaveNode.commandclass) : zWaveNode.commandclass != null)
+//			return false;
+		return uuid != null ? uuid.equals(zWaveNode.getUuid()) : zWaveNode.uuid == null;	// TODO one has uuid, the other does not....
 	}
 
 	@Override
@@ -97,11 +112,11 @@ public class ZWaveNode {
 				'}';
 	}
 
-	public String getId() {
+	public Integer getId() {
 		return id;
 	}
 
-	public void setId(String id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
 
@@ -193,11 +208,11 @@ public class ZWaveNode {
 		this.manufacturer = manufacturer;
 	}
 
-	public Long getManufacturerid() {
+	public String getManufacturerid() {
 		return manufacturerid;
 	}
 
-	public void setManufacturerid(Long manufacturerid) {
+	public void setManufacturerid(String manufacturerid) {
 		this.manufacturerid = manufacturerid;
 	}
 
@@ -209,19 +224,19 @@ public class ZWaveNode {
 		this.product = product;
 	}
 
-	public Long getProducttype() {
+	public String getProducttype() {
 		return producttype;
 	}
 
-	public void setProducttype(Long producttype) {
+	public void setProducttype(String producttype) {
 		this.producttype = producttype;
 	}
 
-	public Long getProductid() {
+	public String getProductid() {
 		return productid;
 	}
 
-	public void setProductid(Long productid) {
+	public void setProductid(String productid) {
 		this.productid = productid;
 	}
 
