@@ -12,6 +12,7 @@ import org.blockzter.mqservice.service.CacheService;
 import org.blockzter.mqservice.service.CacheServiceImpl;
 import org.blockzter.mqservice.service.RepositoryService;
 import org.blockzter.mqservice.service.RepositoryServiceImpl;
+import org.blockzter.mqservice.utils.AppUtils;
 import org.eclipse.paho.client.mqttv3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,6 +106,10 @@ public class ZWaveClient implements ClientNodeCallback{
 			LOGGER.error("Failed to publish {}/{}", topic, payload, e);
 		}
 	}
+	public void publish(String topic, NodeDTO payload) {
+		LOGGER.info("PUB topic={} payload={}", topic, payload);
+		publish(topic, AppUtils.nodeDTOToJson(payload));
+	}
 
 
 	@Override
@@ -121,16 +126,17 @@ public class ZWaveClient implements ClientNodeCallback{
 
 		if (topic.contains("node ready")) {
 			ZWaveNodeAdded nodeReady = mapper.readValue(message.toString(), ZWaveNodeAdded.class);
-			NodeDTO node = toNodeDTO(nodeReady);
+			NodeDTO node = AppUtils.toNodeDTO(nodeReady);
 //			cacheService.addUpdateNode(node);
 			repoService.save(node);
 			LOGGER.info("nodeReady={}", nodeReady);
 
 		} else if (topic.contains("change")) {
 			ZWaveNodeChangedValue nodeChangedValue = mapper.readValue(message.toString(), ZWaveNodeChangedValue.class);
-			NodeDTO node = toNodeDTO(nodeChangedValue);
+			NodeDTO node = AppUtils.toNodeDTO(nodeChangedValue);
 			cacheService.addUpdateNode(node);
 			repoService.save(node);
+			publish("updates", node);
 			LOGGER.info("nodeChangedValue={}", nodeChangedValue);
 
 		} else if (topic.contains("driver ready")) {
@@ -140,14 +146,14 @@ public class ZWaveClient implements ClientNodeCallback{
 
 		} else if (topic.contains("node added")) {
 			ZWaveNodeAdded nodeAdded = mapper.readValue(message.toString(), ZWaveNodeAdded.class);
-			NodeDTO node = toNodeDTO(nodeAdded);
+			NodeDTO node = AppUtils.toNodeDTO(nodeAdded);
 			cacheService.addNode(node);
 			repoService.save(node);
 			LOGGER.info("nodeAdded={}", nodeAdded);
 
 		} else if (topic.contains("value added")) {
 			ZWaveValueAdded valueAdded = mapper.readValue(message.toString(), ZWaveValueAdded.class);
-			NodeDTO node = toNodeDTO(valueAdded);
+			NodeDTO node = AppUtils.toNodeDTO(valueAdded);
 			cacheService.addNode(node);
 			repoService.save(node);
 			LOGGER.info("valueAdded={}", valueAdded);
@@ -180,7 +186,7 @@ public class ZWaveClient implements ClientNodeCallback{
 		ZWaveNodeChangedValue nodeChangedValue = null;
 		try {
 			nodeChangedValue = mapper.readValue(message.toString(), ZWaveNodeChangedValue.class);
-			NodeDTO node = toNodeDTO(nodeChangedValue);
+			NodeDTO node = AppUtils.toNodeDTO(nodeChangedValue);
 			cacheService.addUpdateNode(node);
 			LOGGER.info("nodeChangedValue={}", nodeChangedValue);
 		} catch(IOException e) {
@@ -189,35 +195,7 @@ public class ZWaveClient implements ClientNodeCallback{
 
 
 	}
-	private NodeDTO toNodeDTO(ZWaveNodeAdded nodeAdded) {
-		if (nodeAdded == null) return null;
 
-		NodeDTO node = new NodeDTO(nodeAdded.getNodeid());
-		node.setNodeType(NodeType.ZWAVE);
-		ZWaveNode znode = new ZWaveNode(nodeAdded.getNodeid());
-		znode.setNodeid(nodeAdded.getNodeid());
-		znode.setUuid(nodeAdded.getUuid());
-		updateZWaveNode(znode, nodeAdded);
-
-		node.addUpdateZwaveNode(znode);
-		return node;
-	}
-
-	private void updateZWaveNode(ZWaveNode znode, ZWaveNodeAdded nodeAdded) {
-		if (nodeAdded != null && nodeAdded.getNodeInfo() != null) {
-			ZWaveNodeInfo nodeInfo = nodeAdded.getNodeInfo();
-			LOGGER.info("NODEINFO={}", nodeInfo);
-
-			if (StringUtils.isNotBlank(nodeInfo.getManufacturer())) znode.setManufacturer(nodeInfo.getManufacturer());
-			if (StringUtils.isNotBlank(nodeInfo.getManufacturerid())) znode.setManufacturerid(nodeInfo.getManufacturerid());
-			if (StringUtils.isNotBlank(nodeInfo.getProduct())) znode.setProduct(nodeInfo.getProduct());
-			if (StringUtils.isNotBlank(nodeInfo.getProductid())) znode.setProductid(nodeInfo.getProductid());
-			if (StringUtils.isNotBlank(nodeInfo.getProducttype())) znode.setProducttype(nodeInfo.getProducttype());
-			if (StringUtils.isNotBlank(nodeInfo.getType())) znode.setType(nodeInfo.getType());
-			if (StringUtils.isNotBlank(nodeInfo.getLoc())) znode.setLoc(nodeInfo.getLoc());
-			if (StringUtils.isNotBlank(nodeInfo.getName())) znode.setName(nodeInfo.getName());
-		}
-	}
 //	private String fromString(String value) {
 //		if (StringUtils.isBlank(value)) return null;
 //
@@ -250,49 +228,11 @@ public class ZWaveClient implements ClientNodeCallback{
 // 		"uuid":"b827eb501c51-0x16a1eda-6"}',
 //	Jan 21 21:16:25 raspberrypi Node-RED[8019]: _msgid: '2b51e33c.d4ae1c' }
 
-	private NodeDTO toNodeDTO(ZWaveValueAdded value) {
-		if (value == null) return null;
-
-		NodeDTO node = new NodeDTO(value.getNodeid());
-		node.setNodeType(NodeType.ZWAVE);
-		ZWaveNode znode = new ZWaveNode(value.getNodeid(), value.getCmdclass(), value.getInstance());
-		znode.setNodeid(value.getNodeid());
-		znode.setUuid(value.getUuid());
-		znode.setLabel(value.getLabel());
-		znode.setCmdidx(value.getCmdidx());
-		znode.setCurrState(value.getCurrState());
-		znode.setLabel(value.getLabel());
-		znode.setUnits(value.getUnits());
-		znode.setZWaveValue(value.getValue());
-
-		node.addUpdateZwaveNode(znode);
-		return node;
-	}
-
 //	Feb  8 15:23:59 raspberrypi Node-RED[8078]: payload: '{"nodeid":6,"cmdclass":37,"instance":1,"cmdidx":0,"oldState":false,"currState":true,"label":"Switch","units":"",
 // 		"value":{"value_id":"6-37-1-0","node_id":6,"class_id":37,"type":"bool","genre":"user","instance":1,"index":0,"label":"Switch","units":"","help":"",
 // 			"read_only":false,"write_only":false,"is_polled":false,"min":0,"max":0,"value":true},"uuid":"b827eb501c51-0x16a1eda-6"}',
 //	Feb  8 15:23:59 raspberrypi Node-RED[8078]: _msgid: '2432245d.dbcddc' }
 //
-	private NodeDTO toNodeDTO(ZWaveNodeChangedValue value) {
-		NodeDTO node = new NodeDTO(value.getNodeid());
-		node.setNodeType(NodeType.ZWAVE);
-//		node.setId(va);
-		ZWaveNode znode = new ZWaveNode(value.getNodeid(), value.getCmdclass(), value.getInstance());
-
-		znode.setNodeid(value.getNodeid());
-		znode.setUuid(value.getUuid());
-		znode.setLabel(value.getLabel());
-		znode.setCmdidx(value.getCmdidx());
-		znode.setCurrState(value.getCurrState());
-		znode.setLabel(value.getLabel());
-		znode.setUnits(value.getUnits());
-		znode.setZWaveValue(value.getValue());
-
-		node.addUpdateZwaveNode(znode);
-		return node;
-	}
-
 //	Feb  8 15:23:59 raspberrypi Node-RED[8078]: { topic: 'zwave: node ready',
 //	Feb  8 15:23:59 raspberrypi Node-RED[8078]: payload: '{"nodeid":6,"nodeinfo":{"manufacturer":"GE","manufacturerid":"0x0063","product":"12722 On/Off Relay Switch","producttype":"0x4952","productid":"0x3032","type":"Binary Power Switch","name":"","loc":""},"uuid":"b827eb501c51-0x16a1eda-6"}',
 //	Feb  8 15:23:59 raspberrypi Node-RED[8078]: _msgid: '4b8f723c.b4708c' }

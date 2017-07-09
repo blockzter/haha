@@ -25,7 +25,7 @@ public class TestBeanUtils {
 		LOGGER.info("SRC={}", src);
 		ZWaveNode dest = new ZWaveNode(1, 1, 1);
 		dest.setManufacturer("not overwritten");;
-		dest.setManufacturerid(42L);
+		dest.setManufacturerid("42");
 		dest.setLabel("not overwritten");
 		LOGGER.info("DEST={}", dest);
 
