@@ -1,17 +1,14 @@
 package org.blockzter.mqservice.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.StringUtils;
-import org.blockzter.mqservice.model.NodeType;
+import org.blockzter.mqservice.model.EventType;
 import org.blockzter.mqservice.model.db.ZWaveNodeRepository;
+import org.blockzter.mqservice.model.dto.EventDTO;
 import org.blockzter.mqservice.model.dto.NodeDTO;
 import org.blockzter.mqservice.model.gen.DBRepository;
 import org.blockzter.mqservice.model.zwave.*;
 import org.blockzter.mqservice.model.gen.Broker;
-import org.blockzter.mqservice.service.CacheService;
-import org.blockzter.mqservice.service.CacheServiceImpl;
-import org.blockzter.mqservice.service.RepositoryService;
-import org.blockzter.mqservice.service.RepositoryServiceImpl;
+import org.blockzter.mqservice.service.*;
 import org.blockzter.mqservice.utils.AppUtils;
 import org.eclipse.paho.client.mqttv3.*;
 import org.slf4j.Logger;
@@ -38,6 +35,7 @@ public class ZWaveClient implements ClientNodeCallback{
 	private ZWaveNodeRepository repo = null;
 	private ObjectMapper mapper = new ObjectMapper();
 	private RepositoryService repoService;
+	private EventService zwaveEventService;
 
 
 	public ZWaveClient(Broker broker, DBRepository repository) {
@@ -63,6 +61,7 @@ public class ZWaveClient implements ClientNodeCallback{
 			client = new MqttClient(brokerUrl, clientId);
 			client.setCallback(this);
 			client.connect(connOpt);
+			zwaveEventService = new ZWaveEventService(client);
 		} catch (MqttException e) {
 			LOGGER.error("Failed to connect to {}", brokerUrl, e);
 			System.exit(-1);
@@ -136,7 +135,9 @@ public class ZWaveClient implements ClientNodeCallback{
 			NodeDTO node = AppUtils.toNodeDTO(nodeChangedValue);
 			cacheService.addUpdateNode(node);
 			repoService.save(node);
-			publish("updates", node);
+			EventDTO dto = zwaveEventService.createDTO(EventType.UPDATE, node);
+			zwaveEventService.publish("updates", dto);
+//			publish("updates", node);
 			LOGGER.info("nodeChangedValue={}", nodeChangedValue);
 
 		} else if (topic.contains("driver ready")) {

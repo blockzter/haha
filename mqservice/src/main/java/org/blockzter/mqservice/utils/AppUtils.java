@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.blockzter.mqservice.exceptions.PropertyNotFoundException;
 import org.blockzter.mqservice.model.NodeType;
+import org.blockzter.mqservice.model.dto.EventDTO;
 import org.blockzter.mqservice.model.dto.NodeDTO;
 import org.blockzter.mqservice.model.gen.MQServiceConfig;
 import org.blockzter.mqservice.model.zwave.*;
@@ -113,6 +114,16 @@ public class AppUtils {
 			contents = mapper.writeValueAsString(node);
 		} catch(JsonProcessingException e) {
 			LOGGER.error("Failed to convert node={} to JSON.", node, e);
+		}
+		return contents;
+	}
+	public static String eventDTOtoJson(EventDTO dto) {
+		ObjectMapper mapper = new ObjectMapper();
+		String contents = null;
+		try {
+			contents = mapper.writeValueAsString(dto);
+		} catch(JsonProcessingException e) {
+			LOGGER.error("Failed to convert event={} to JSON.", dto, e);
 		}
 		return contents;
 	}
