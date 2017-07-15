@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Created by mblock2 on 3/10/17.
  */
-
+@Deprecated
 public class ZWaveNodeRepository extends CouchDbRepositorySupport<ZWaveNode> {
 	public ZWaveNodeRepository(Class<ZWaveNode> type, CouchDbConnector db) {	// was protected
 		super(type, db);
