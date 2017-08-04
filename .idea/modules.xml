@@ -2,6 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/dal.iml" filepath="$PROJECT_DIR$/.idea/modules/dal.iml" group="dal" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/dal/dal_main.iml" filepath="$PROJECT_DIR$/.idea/modules/dal/dal_main.iml" group="dal" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/dal/dal_test.iml" filepath="$PROJECT_DIR$/.idea/modules/dal/dal_test.iml" group="dal" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/haha.iml" filepath="$PROJECT_DIR$/.idea/modules/haha.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/haha_main.iml" filepath="$PROJECT_DIR$/.idea/modules/haha_main.iml" group="haha" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/haha_test.iml" filepath="$PROJECT_DIR$/.idea/modules/haha_test.iml" group="haha" />

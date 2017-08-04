@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data-map xmlns="http://cayenne.apache.org/schema/9/modelMap"
+	 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	 xsi:schemaLocation="http://cayenne.apache.org/schema/9/modelMap http://cayenne.apache.org/schema/9/modelMap.xsd"
+	 project-version="9">
+	<property name="defaultPackage" value="org.blockzter.haha.dal.model"/>
+	<property name="defaultSchema" value="public"/>
+	<db-entity name="device" schema="public">
+		<db-attribute name="d_id" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
+		<db-attribute name="name" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="status" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="type" type="INTEGER" isMandatory="true"/>
+		<db-attribute name="uuid" type="VARCHAR" isMandatory="true" length="50"/>
+	</db-entity>
+	<db-entity name="device_type" schema="public">
+		<db-attribute name="dt_id" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
+		<db-attribute name="name" type="VARCHAR" isMandatory="true" length="100"/>
+	</db-entity>
+	<db-entity name="floor" schema="public">
+		<db-attribute name="floor_id" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
+		<db-attribute name="name" type="VARCHAR" isMandatory="true" length="100"/>
+	</db-entity>
+	<db-entity name="floor_room" schema="public">
+		<db-attribute name="floor_id" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
+		<db-attribute name="room_id" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
+	</db-entity>
+	<db-entity name="room" schema="public">
+		<db-attribute name="name" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="room_id" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
+	</db-entity>
+	<db-entity name="room_device" schema="public">
+		<db-attribute name="device_id" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
+		<db-attribute name="room_id" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
+	</db-entity>
+	<db-entity name="zwave_node_info" schema="public">
+		<db-attribute name="id" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
+		<db-attribute name="manufacturer" type="VARCHAR" isMandatory="true" length="20"/>
+		<db-attribute name="manufacturer_id" type="VARCHAR" isMandatory="true" length="20"/>
+		<db-attribute name="product" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="product_id" type="VARCHAR" isMandatory="true" length="20"/>
+		<db-attribute name="product_type" type="VARCHAR" isMandatory="true" length="20"/>
+		<db-attribute name="type" type="VARCHAR" isMandatory="true" length="100"/>
+	</db-entity>
+	<obj-entity name="Device" className="org.blockzter.haha.dal.model.Device" dbEntityName="device">
+		<obj-attribute name="name" type="java.lang.String" db-attribute-path="name"/>
+		<obj-attribute name="status" type="java.lang.String" db-attribute-path="status"/>
+		<obj-attribute name="type" type="int" db-attribute-path="type"/>
+		<obj-attribute name="uuid" type="java.lang.String" db-attribute-path="uuid"/>
+	</obj-entity>
+	<obj-entity name="DeviceType" className="org.blockzter.haha.dal.model.DeviceType" dbEntityName="device_type">
+		<obj-attribute name="name" type="java.lang.String" db-attribute-path="name"/>
+	</obj-entity>
+	<obj-entity name="Floor" className="org.blockzter.haha.dal.model.Floor" dbEntityName="floor">
+		<obj-attribute name="name" type="java.lang.String" db-attribute-path="name"/>
+	</obj-entity>
+	<obj-entity name="FloorRoom" className="org.blockzter.haha.dal.model.FloorRoom" dbEntityName="floor_room">
+	</obj-entity>
+	<obj-entity name="Room" className="org.blockzter.haha.dal.model.Room" dbEntityName="room">
+		<obj-attribute name="name" type="java.lang.String" db-attribute-path="name"/>
+	</obj-entity>
+	<obj-entity name="RoomDevice" className="org.blockzter.haha.dal.model.RoomDevice" dbEntityName="room_device">
+	</obj-entity>
+	<obj-entity name="ZwaveNodeInfo" className="org.blockzter.haha.dal.model.ZwaveNodeInfo" dbEntityName="zwave_node_info">
+		<obj-attribute name="manufacturer" type="java.lang.String" db-attribute-path="manufacturer"/>
+		<obj-attribute name="manufacturerId" type="java.lang.String" db-attribute-path="manufacturer_id"/>
+		<obj-attribute name="product" type="java.lang.String" db-attribute-path="product"/>
+		<obj-attribute name="productId" type="java.lang.String" db-attribute-path="product_id"/>
+		<obj-attribute name="productType" type="java.lang.String" db-attribute-path="product_type"/>
+		<obj-attribute name="type" type="java.lang.String" db-attribute-path="type"/>
+	</obj-entity>
+	<db-relationship name="device_rm_rm" source="device" target="room_device" toMany="false">
+		<db-attribute-pair source="d_id" target="device_id"/>
+	</db-relationship>
+	<db-relationship name="device_type" source="device" target="device_type" toDependentPK="true" toMany="false">
+		<db-attribute-pair source="d_id" target="dt_id"/>
+	</db-relationship>
+	<db-relationship name="devices" source="device_type" target="device" toMany="true">
+		<db-attribute-pair source="dt_id" target="d_id"/>
+	</db-relationship>
+	<db-relationship name="floor_rooms" source="floor" target="floor_room" toMany="false">
+		<db-attribute-pair source="floor_id" target="floor_id"/>
+	</db-relationship>
+	<db-relationship name="floors" source="floor_room" target="floor" toDependentPK="true" toMany="true">
+		<db-attribute-pair source="floor_id" target="floor_id"/>
+	</db-relationship>
+	<db-relationship name="room" source="floor_room" target="room" toDependentPK="true" toMany="true">
+		<db-attribute-pair source="room_id" target="room_id"/>
+	</db-relationship>
+	<db-relationship name="rm_rm_device" source="room" target="room_device" toMany="false">
+		<db-attribute-pair source="room_id" target="room_id"/>
+	</db-relationship>
+	<db-relationship name="room_floor" source="room" target="floor_room" toMany="false">
+		<db-attribute-pair source="room_id" target="room_id"/>
+	</db-relationship>
+	<db-relationship name="rm_device_device" source="room_device" target="device" toDependentPK="true" toMany="true">
+		<db-attribute-pair source="device_id" target="d_id"/>
+	</db-relationship>
+	<db-relationship name="rm_device_rm" source="room_device" target="room" toDependentPK="true" toMany="true">
+		<db-attribute-pair source="room_id" target="room_id"/>
+	</db-relationship>
+	<obj-relationship name="device_rm_rm" source="Device" target="RoomDevice" deleteRule="Nullify" db-relationship-path="device_rm_rm"/>
+	<obj-relationship name="device_type" source="Device" target="DeviceType" deleteRule="Nullify" db-relationship-path="device_type"/>
+	<obj-relationship name="floor_rooms" source="Floor" target="FloorRoom" deleteRule="Deny" db-relationship-path="floor_rooms"/>
+	<obj-relationship name="rooms" source="Floor" target="Room" deleteRule="Deny" db-relationship-path="floor_rooms.room"/>
+	<obj-relationship name="floors" source="FloorRoom" target="Floor" db-relationship-path="floors"/>
+	<obj-relationship name="room" source="FloorRoom" target="Room" db-relationship-path="room"/>
+	<obj-relationship name="devices" source="Room" target="Device" deleteRule="Deny" db-relationship-path="rm_rm_device.rm_device_device"/>
+	<obj-relationship name="floor" source="Room" target="Floor" deleteRule="Nullify" db-relationship-path="room_floor.floors"/>
+	<obj-relationship name="rm_rm_device" source="Room" target="RoomDevice" deleteRule="Nullify" db-relationship-path="rm_rm_device"/>
+	<obj-relationship name="room_floor" source="Room" target="FloorRoom" deleteRule="Nullify" db-relationship-path="room_floor"/>
+	<obj-relationship name="rm_device_device" source="RoomDevice" target="Device" deleteRule="Deny" db-relationship-path="rm_device_device"/>
+	<obj-relationship name="rm_device_rm" source="RoomDevice" target="Room" deleteRule="Deny" db-relationship-path="rm_device_rm"/>
+</data-map>

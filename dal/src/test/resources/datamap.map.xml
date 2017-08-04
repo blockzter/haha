@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data-map xmlns="http://cayenne.apache.org/schema/9/modelMap"
+	 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	 xsi:schemaLocation="http://cayenne.apache.org/schema/9/modelMap http://cayenne.apache.org/schema/9/modelMap.xsd"
+	 project-version="9">
+	<property name="defaultPackage" value="org.blockzter.haha.dal.model"/>
+	<property name="defaultSchema" value="public"/>
+	<db-entity name="device" schema="public">
+		<db-attribute name="d_id" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
+		<db-attribute name="name" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="status" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="type" type="INTEGER" isMandatory="true"/>
+		<db-attribute name="uuid" type="VARCHAR" isMandatory="true" length="50"/>
+	</db-entity>
+	<db-entity name="device_type" schema="public">
+		<db-attribute name="dt_id" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
+		<db-attribute name="name" type="VARCHAR" isMandatory="true" length="100"/>
+	</db-entity>
+	<obj-entity name="Device" className="org.blockzter.haha.dal.model.Device" dbEntityName="device">
+		<obj-attribute name="name" type="java.lang.String" db-attribute-path="name"/>
+		<obj-attribute name="status" type="java.lang.String" db-attribute-path="status"/>
+		<obj-attribute name="type" type="int" db-attribute-path="type"/>
+		<obj-attribute name="uuid" type="java.lang.String" db-attribute-path="uuid"/>
+	</obj-entity>
+	<obj-entity name="DeviceType" className="org.blockzter.haha.dal.model.DeviceType" dbEntityName="device_type">
+		<obj-attribute name="name" type="java.lang.String" db-attribute-path="name"/>
+	</obj-entity>
+	<db-relationship name="device_type" source="device" target="device_type" toDependentPK="true" toMany="false">
+		<db-attribute-pair source="d_id" target="dt_id"/>
+	</db-relationship>
+	<db-relationship name="devices" source="device_type" target="device" toMany="true">
+		<db-attribute-pair source="dt_id" target="d_id"/>
+	</db-relationship>
+	<obj-relationship name="device_type" source="Device" target="DeviceType" deleteRule="Nullify" db-relationship-path="device_type"/>
+</data-map>

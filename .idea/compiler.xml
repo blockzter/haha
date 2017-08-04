@@ -2,6 +2,8 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel>
+      <module name="dal_main" target="1.8" />
+      <module name="dal_test" target="1.8" />
       <module name="haha_main" target="1.8" />
       <module name="haha_test" target="1.8" />
       <module name="mqservice_main" target="1.8" />

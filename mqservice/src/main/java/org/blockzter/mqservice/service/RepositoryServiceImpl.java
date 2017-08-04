@@ -208,44 +208,4 @@ public class RepositoryServiceImpl implements RepositoryService {
 	private String getRepositoryMapName() {
 		return repository.getName()+ "_map";
 	}
-
-//	private void init() {
-//		try {
-//			LOGGER.info("Setting up repository connection...");
-//			HttpClient httpClient = new StdHttpClient.Builder().url(repository.getUrl()).build();
-//			CouchDbInstance couchDbInstance = new StdCouchDbInstance(httpClient);
-//			CouchDbConnector db = new StdCouchDbConnector(repository.getName(), couchDbInstance);
-//			repo = new ZWaveNodeRepository(ZWaveNode.class, db);
-//
-//		} catch (MalformedURLException e) {
-//			LOGGER.error("Failed to establish DB connection {}", repository.getUrl(), e);
-//		}
-//		LOGGER.info("Repository {}/{} now available...", repository.getUrl(), repository.getName());
-//	}
-//
-//	@Override
-//	public void save(NodeDTO node) {
-//		if (node != null && node.getZwaveNode() != null) {
-//			Date now = new Date();
-//			for(ZWaveNode zWaveNode : node.getZwaveNode()) {
-//				zWaveNode.setLastUpdate(now);
-//				repo.add(zWaveNode);
-//			}
-//		}
-//	}
-//
-//	@Override
-//	public List<ZWaveNode> getNodes(Date from, Date to) {
-//		if (from == null || to == null) return null;
-//
-//		// TODO handle from/to lastUpdate fields...
-//		return repo.getAll();
-//	}
-//
-//	@Override
-//	public List<ZWaveNode> getTodays() {
-//		return repo.zwaveEventsForToday();
-//	}
-//
-//
 }

@@ -6,7 +6,6 @@ import org.blockzter.mqservice.model.gen.DBRepository;
 import org.blockzter.mqservice.model.zwave.ZWaveNode;
 import org.junit.Before;
 import org.junit.Test;
-import org.redisson.api.RType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

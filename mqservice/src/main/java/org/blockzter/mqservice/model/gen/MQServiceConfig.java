@@ -14,6 +14,10 @@ public class MQServiceConfig {
     private List<Broker> mBrokers;
     @JsonProperty(value = "repository")
 	private DBRepository mRepository;
+    @JsonProperty(value = "dal")
+	private Dal mDal;
+    @JsonProperty(value = "behaviour")
+	private Behaviour mBehaviour;
 
     public List<Broker> getBrokers() {
         return mBrokers;
@@ -31,11 +35,29 @@ public class MQServiceConfig {
 		this.mRepository = mRepository;
 	}
 
+	public Dal getDal() {
+		return mDal;
+	}
+
+	public void setDal(Dal mDal) {
+		this.mDal = mDal;
+	}
+
+	public Behaviour getBehaviour() {
+		return mBehaviour;
+	}
+
+	public void setBehaviour(Behaviour mBehaviour) {
+		this.mBehaviour = mBehaviour;
+	}
+
 	@Override
 	public String toString() {
 		return "MQServiceConfig{" +
 				"mBrokers=" + mBrokers +
 				", mRepository=" + mRepository +
+				", mDal=" + mDal +
+				", mBehaviour=" + mBehaviour +
 				'}';
 	}
 }

@@ -5,7 +5,9 @@ import org.blockzter.mqservice.model.EventType;
 import org.blockzter.mqservice.model.db.ZWaveNodeRepository;
 import org.blockzter.mqservice.model.dto.EventDTO;
 import org.blockzter.mqservice.model.dto.NodeDTO;
+import org.blockzter.mqservice.model.gen.Behaviour;
 import org.blockzter.mqservice.model.gen.DBRepository;
+import org.blockzter.mqservice.model.gen.Dal;
 import org.blockzter.mqservice.model.zwave.*;
 import org.blockzter.mqservice.model.gen.Broker;
 import org.blockzter.mqservice.service.*;
@@ -36,9 +38,10 @@ public class ZWaveClient implements ClientNodeCallback{
 	private ObjectMapper mapper = new ObjectMapper();
 	private RepositoryService repoService;
 	private EventService zwaveEventService;
+	private CaptureService captureService;
 
 
-	public ZWaveClient(Broker broker, DBRepository repository) {
+	public ZWaveClient(Broker broker, DBRepository repository, Dal dal, Behaviour behaviour) {
 		LOGGER.info("*** new({}, {})", broker, repository);
 		this.broker = broker;
 		brokerUrl = broker.getConnection().getHost();
@@ -47,6 +50,7 @@ public class ZWaveClient implements ClientNodeCallback{
 		clientId = broker.getConnection().getClientId();
 		cacheService = CacheServiceImpl.getInstance();
 		repoService = new RepositoryServiceImpl(repository);
+		captureService = new CaptureServiceImpl(dal.getConfig(), behaviour.getNetCapture());
 	}
 
 	public void run(String... subTopics) {
@@ -92,8 +96,21 @@ public class ZWaveClient implements ClientNodeCallback{
 //			LOGGER.error("Failed to switchOn", e);
 //		}
 
+		refreshTodays();
 		List<ZWaveNode> nodes = repoService.getTodays();
 		LOGGER.info("NODES={}", nodes);
+	}
+
+	private void refreshTodays() {
+		LOGGER.info("Refreshing todays events...");
+		List<ZWaveNode> nodes = repoService.getTodays();
+		LOGGER.info("NODES={}", nodes);
+		if (nodes != null) {
+			for (ZWaveNode zwnode : nodes) {
+				EventDTO dto = zwaveEventService.createDTO(EventType.UPDATE, zwnode);
+				captureService.capture(dto);
+			}
+		}
 	}
 
 	public void publish(String topic, String payload) {
@@ -122,20 +139,36 @@ public class ZWaveClient implements ClientNodeCallback{
 		LOGGER.info("GOT topic={} message={}", topic, message);
 		Path path = FileSystems.getDefault().getPath("config", "nodes-conf.json");
 
-
 		if (topic.contains("node ready")) {
+//[MQTT Call: haha_1] INFO org.blockzter.mqservice.client.ZWaveClient -
+// GOT topic=zwave: node ready
+// 	 message={"nodeid":4,
+// 		"nodeinfo":{"manufacturer":"GE","manufacturerid":"0x0063","product":"45606 2-Way Dimmer Switch","producttype":"0x4457",
+// 					"productid":"0x3230","type":"Multilevel Power Switch","name":"","loc":""},
+// 		"uuid":"b827eb501c51-0x16a1eda-4"
+// 	 }
 			ZWaveNodeAdded nodeReady = mapper.readValue(message.toString(), ZWaveNodeAdded.class);
 			NodeDTO node = AppUtils.toNodeDTO(nodeReady);
+			EventDTO dto = zwaveEventService.createDTO(EventType.UPDATE, node);
+			captureService.capture(dto);
 //			cacheService.addUpdateNode(node);
 			repoService.save(node);
 			LOGGER.info("nodeReady={}", nodeReady);
 
 		} else if (topic.contains("change")) {
+//[MQTT Call: haha_1] INFO org.blockzter.mqservice.client.ZWaveClient -
+// GOT topic=zwave: value changed
+// 	 message={"nodeid":4,"cmdclass":38,"instance":1,"cmdidx":0,"oldState":2,"currState":98,"label":"Level","units":"",
+// 			  "value":{"value_id":"4-38-1-0","node_id":4,"class_id":38,"type":"byte","genre":"user","instance":1,"index":0,"label":"Level",
+// 						"units":"","help":"","read_only":false,"write_only":false,"is_polled":false,"min":0,"max":255,"value":98},
+// 			  "uuid":"b827eb501c51-0x16a1eda-4"}
+
 			ZWaveNodeChangedValue nodeChangedValue = mapper.readValue(message.toString(), ZWaveNodeChangedValue.class);
 			NodeDTO node = AppUtils.toNodeDTO(nodeChangedValue);
 			cacheService.addUpdateNode(node);
 			repoService.save(node);
 			EventDTO dto = zwaveEventService.createDTO(EventType.UPDATE, node);
+			captureService.capture(dto);
 			zwaveEventService.publish("updates", dto);
 //			publish("updates", node);
 			LOGGER.info("nodeChangedValue={}", nodeChangedValue);

@@ -65,9 +65,6 @@ public class MQService {
 					}
 					client.run(topics.toArray(new String[0]));
 //					testPubs(client);
-
-
-//				ZWaveClient client = new ZWaveClient(b, mqServiceConfig.getRepository());
 				} catch(ClassNotFoundException e) {
 					LOGGER.error("Failed to find class {} for broker {}", b.getHandler().getClient(), b.getName(), e);
 					break;
@@ -131,13 +128,15 @@ public class MQService {
 		ClientNodeCallback ret = null;
 		Handler handler = broker.getHandler();
 		DBRepository dbRepository = mqServiceConfig.getRepository();
+		Dal dal = mqServiceConfig.getDal();
+		Behaviour behaviour = mqServiceConfig.getBehaviour();
 
 		if (handler != null) {
 			String clientClassName = handler.getClient();
 			if (clientClassName != null) {
 				Class<?> clientClazz = Class.forName(clientClassName);
-				Constructor<?> con = clientClazz.getConstructor(broker.getClass(), dbRepository.getClass());
-				Object rr = con.newInstance(broker, dbRepository);
+				Constructor<?> con = clientClazz.getConstructor(broker.getClass(), dbRepository.getClass(), dal.getClass(), behaviour.getClass());
+				Object rr = con.newInstance(broker, dbRepository, dal, behaviour);
 				ret = (ClientNodeCallback)rr;
 			}
 		}

@@ -33,7 +33,7 @@ public class TestAppUtils {
 
 		MQServiceConfig mqServiceConfig = AppUtils.loadConfig(confUrl.getFile());
 		LOGGER.info("CONFIG={}", mqServiceConfig);
-//		assertThat(mqServiceConfig).
+		assertThat(mqServiceConfig).isNotNull();
 	}
 
 	@Test

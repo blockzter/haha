@@ -9,6 +9,7 @@ import org.blockzter.mqservice.model.NodeType;
 public class EventDTO extends BaseDTO {
 	private EventType eventType;
 	private NodeType sourceType;
+	private Integer deviceType;	// TODO map to ...
 	private Integer nodeId;
 	private String currState;
 	private String label;
@@ -19,6 +20,19 @@ public class EventDTO extends BaseDTO {
 		super(id);
 	}
 
+	@Override
+	public String toString() {
+		return "EventDTO{" +
+				"eventType=" + eventType +
+				", sourceType=" + sourceType +
+				", deviceType=" + deviceType +
+				", nodeId=" + nodeId +
+				", currState='" + currState + '\'' +
+				", label='" + label + '\'' +
+				", units='" + units + '\'' +
+				", uuid='" + uuid + '\'' +
+				'}';
+	}
 
 	public EventType getEventType() {
 		return eventType;
@@ -34,6 +48,14 @@ public class EventDTO extends BaseDTO {
 
 	public void setSourceType(NodeType sourceType) {
 		this.sourceType = sourceType;
+	}
+
+	public Integer getDeviceType() {
+		return deviceType;
+	}
+
+	public void setDeviceType(Integer deviceType) {
+		this.deviceType = deviceType;
 	}
 
 	public Integer getNodeId() {
